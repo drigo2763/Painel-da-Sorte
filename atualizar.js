@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const API_URL = "https://loteriascaixa-api.irvingdevs.workers.dev";
+const API_BASE = "https://servicebus2.caixa.gov.br/portaldeloterias/api";
 const ARQUIVO_DADOS = 'dados.json';
 
 async function rodar() {
