@@ -2,37 +2,50 @@ const fs = require('fs');
 
 const ARQUIVO_DADOS = 'dados.json';
 
-// Configuração estrita de limites das dezenas
 const LIMITES = {
-  megasena:  { max: 60, dezenas: 6,  soma: 183.2, pares: 3.0 },
-  quina:     { max: 80, dezenas: 5,  soma: 202.3, pares: 2.5 },
-  lotofacil: { max: 25, dezenas: 15, soma: 195.2, pares: 7.2 }
+  megasena:  { max: 60, dezenas: 6,  soma: 183.2, pares: 3.0, endpoint: "mega-sena" },
+  quina:     { max: 80, dezenas: 5,  soma: 202.3, pares: 2.5, endpoint: "quina" },
+  lotofacil: { max: 25, dezenas: 15, soma: 195.2, pares: 7.2, endpoint: "lotofacil" }
 };
 
-// Carrossel de APIs estáveis que não bloqueiam o GitHub
+// APIs alternativas e muito estáveis
 const APIS = [
-  (loteria) => `https://loteriascaixa-api.herokuapp.com/api/${loteria}`,
-  (loteria) => `https://api.guidi.dev/loterias/${loteria}/latest`,
-  (loteria) => `https://apis.labs.geeklab.com.br/loterias/${loteria}`
+  (loteria) => `https://loteriascaixa-api.herokuapp.com/api/${loteria.replace('-', '')}`,
+  (loteria) => `https://api.potatotech.me/loterias/${loteria}/latest`,
+  (loteria) => `https://api.guidi.dev/loterias/${loteria.replace('-', '')}/latest`
 ];
 
-async function buscarComContingencia(loteria) {
+async function buscarComContingencia(loteriaKey) {
+  const endpoint = LIMITES[loteriaKey].endpoint;
+  
   for (let i = 0; i < APIS.length; i++) {
-    const url = APIS[i](loteria);
+    const url = APIS[i](endpoint);
     try {
       console.log(`    > Tentando API ${i + 1}: ${url}`);
-      const response = await fetch(url, { signal: AbortSignal.timeout(6000) });
+      
+      // Passando User-Agent para simular um navegador e evitar bloqueios de firewall do GitHub Actions
+      const response = await fetch(url, { 
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/json'
+        },
+        signal: AbortSignal.timeout(8000) 
+      });
+      
       if (response.ok) {
         const json = await response.json();
-        // Normaliza o nó do número do concurso, pois varia entre APIs
-        const numero = json.numero || json.concurso || (json.listaDeConcursos && json.listaDeConcursos[0]?.numero);
-        const dezenas = json.listaDezenas || json.dezenas || (json.listaDeConcursos && json.listaDeConcursos[0]?.dezenas);
         
-        if (numero && dezenas) {
+        // Mapeamento inteligente para aceitar os diferentes formatos de retorno de cada API
+        const numero = json.numero || json.concurso || (json.listaDeConcursos && json.listaDeConcursos[0]?.numero);
+        let dezenasRaw = json.listaDezenas || json.dezenas || (json.listaDeConcursos && json.listaDeConcursos[0]?.dezenas);
+        
+        if (numero && dezenasRaw) {
+          const dezenas = dezenasRaw.map(Number).sort((a, b) => a - b);
           return {
             numero: Number(numero),
             dataApuracao: json.dataApuracao || json.data || "",
-            listaDezenas: dezenas.map(Number).sort((a, b) => a - b),
+            listaDezenas: dezenas,
             raw: json
           };
         }
@@ -46,7 +59,7 @@ async function buscarComContingencia(loteria) {
 
 async function rodar() {
   try {
-    console.log("Iniciando atualização dos dados com Multi-API Blindada...");
+    console.log("Iniciando atualização dos dados com Agente de Navegação...");
     let dadosAtuais = {};
     if (fs.existsSync(ARQUIVO_DADOS)) {
       const conteudo = fs.readFileSync(ARQUIVO_DADOS, 'utf8');
@@ -68,14 +81,11 @@ async function rodar() {
         const concursoNovo = Number(dadosAPI.numero);
         const ultConcursoSalvo = dadosAtuais[loteria]?.ultimoConcurso || 0;
 
-        // Se encontrou um concurso novo ou o painel não tem histórico nenhum ainda
         if (!dadosAtuais[loteria] || concursoNovo > ultConcursoSalvo) {
           console.log(`🔥 Novo concurso detectado para ${loteria}: ${concursoNovo}`);
           
-          // Tratamento inteligente do histórico para evitar requisições pesadas em loops de 30 passos
           let recentesValidos = dadosAtuais[loteria]?.recentDraws || [];
           
-          // Se a API retornou uma lista completa de histórico de uma vez só, usamos ela
           if (dadosAPI.raw.listaDeConcursos && Array.isArray(dadosAPI.raw.listaDeConcursos)) {
             recentesValidos = dadosAPI.raw.listaDeConcursos.map(r => ({
               concurso: Number(r.numero || r.concurso),
@@ -83,7 +93,6 @@ async function rodar() {
               dezenas: (r.listaDezenas || r.dezenas).map(Number).sort((a,b)=>a-b)
             }));
           } else {
-            // Caso contrário, adicionamos o novo concurso no topo do histórico existente de forma limpa
             const jaExiste = recentesValidos.some(r => r.concurso === concursoNovo);
             if (!jaExiste) {
               recentesValidos.push({
@@ -94,13 +103,11 @@ async function rodar() {
             }
           }
 
-          // Mantém apenas os últimos 50 sorteios salvos para não inflar o arquivo
           recentesValidos = recentesValidos
             .filter(r => r && r.dezenas && r.dezenas.length === LIMITES[loteria].dezenas)
             .sort((a, b) => a.concurso - b.concurso)
             .slice(-50);
 
-          // Estrutura e calcula os padrões exatamente com a sua lógica original de preenchimento
           dadosAtuais[loteria] = {
             ultimoConcurso: concursoNovo,
             somaMedia: LIMITES[loteria].soma,
@@ -111,13 +118,11 @@ async function rodar() {
             atualizadoEm: new Date().toISOString()
           };
 
-          // Incrementa o atraso de todas as dezenas
           const maxDezena = LIMITES[loteria].max;
           for (let i = 1; i <= maxDezena; i++) {
             dadosAtuais[loteria].atraso[i] = (dadosAtuais[loteria].atraso[i] || 0) + 1;
           }
           
-          // Zera o atraso das dezenas sorteadas e adiciona +1 na frequência delas
           dadosAPI.listaDezenas.forEach(num => {
             if (num >= 1 && num <= maxDezena) {
               dadosAtuais[loteria].frequencia[num] = (dadosAtuais[loteria].frequencia[num] || 0) + 1;
@@ -135,7 +140,7 @@ async function rodar() {
     }
 
     fs.writeFileSync(ARQUIVO_DADOS, JSON.stringify(dadosAtuais, null, 2));
-    console.log("\n💾 Processo geral concluído com segurança máxima.");
+    console.log("\n💾 Processo geral concluído.");
   } catch (e) {
     console.error("Erro geral no ecossistema:", e);
   }
