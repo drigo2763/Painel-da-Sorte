@@ -2,24 +2,41 @@ name: Robo Loteria
 
 on:
   schedule:
-    - cron: '30 23 * * *' # Roda todas as noites às 20:30 (Horário de Brasília)
-  workflow_dispatch:     # Permite rodar manualmente pelo botão
+    - cron: '30 23 * * *' # Roda todos os dias às 23:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Usar Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 24 # Atualizado para a versão mais recente exigida pelo GitHub
-    - name: Rodar script de atualizacao
-      run: node atualizar.js
-      continue-on-error: true # Se der um erro temporário na API, não trava o GitHub
-    - name: Salvar modificacoes no dados.json
-      run: |
-        git config --global user.name "Robo Loteria"
-        git config --global user.email "bot@github.com"
-        git add dados.json
-        git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Dados das loterias atualizados" && git push)
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Usar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Rodar script de atualização
+        run: node atualizar.js
+        continue-on-error: true
+
+      - name: Salvar modificações no dados.json
+        run: |
+          git config --global user.name "Robo Loteria"
+          git config --global user.email "bot@github.com"
+
+          git add dados.json
+
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração para enviar."
+          else
+            git commit -m "🤖 Dados das loterias atualizados"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
