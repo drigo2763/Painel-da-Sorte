@@ -3,7 +3,7 @@ name: Robo Loteria
 on:
   schedule:
     - cron: '30 23 * * *' # Roda todas as noites às 20:30 (Horário de Brasília)
-  workflow_dispatch:     # Cria um botão para você rodar manualmente quando quiser
+  workflow_dispatch:     # Permite rodar manualmente pelo botão
 
 jobs:
   build:
@@ -13,9 +13,10 @@ jobs:
     - name: Usar Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 24 # Atualizado para a versão mais recente exigida pelo GitHub
     - name: Rodar script de atualizacao
       run: node atualizar.js
+      continue-on-error: true # Se der um erro temporário na API, não trava o GitHub
     - name: Salvar modificacoes no dados.json
       run: |
         git config --global user.name "Robo Loteria"
