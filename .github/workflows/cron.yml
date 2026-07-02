@@ -38,5 +38,5 @@ jobs:
             echo "Nenhuma alteração para enviar."
           else
             git commit -m "🤖 Dados das loterias atualizados"
-            git push origin HEAD:${{ github.ref_name }}
+            git push --force
           fi
