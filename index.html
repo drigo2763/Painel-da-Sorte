@@ -28,8 +28,22 @@
       --vermelho-bg:#200A0A;
       --roxo:      #A78BFA;
     }
+    body.tema-claro {
+      --bg:        #F5F5FA;
+      --card:      #FFFFFF;
+      --card2:     #EEEEF5;
+      --borda:     #DADAE6;
+      --texto:     #16161F;
+      --muted:     #6B6B80;
+      --quente-bg:#FFE4D6;
+      --frio-bg:   #DCF0FF;
+      --verde-bg: #DCFCE7;
+      --amarelo-bg:#FEF9C3;
+      --vermelho-bg:#FEE2E2;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #050507; color: var(--texto); font-family: 'Inter', sans-serif; min-height: 100vh; padding-bottom: 40px; }
+    body { background: var(--bg-outer, #050507); color: var(--texto); font-family: 'Inter', sans-serif; min-height: 100vh; padding-bottom: 40px; }
+    body.tema-claro { --bg-outer: #E4E4EE; }
     #appShell { max-width: 600px; margin: 0 auto; background: var(--bg); min-height: 100vh; box-shadow: 0 0 60px rgba(0,0,0,0.5); }
     @media (min-width: 600px) { #appShell { border-left: 1px solid var(--borda); border-right: 1px solid var(--borda); } }
     
@@ -39,8 +53,9 @@
     @keyframes girar { to { transform: rotate(360deg); } }
     
     header { background: var(--card); border-bottom: 2px solid var(--borda); padding: 20px 16px 0; position: sticky; top: 0; z-index: 50; }
-    .titulo-app { font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; text-align: center; margin-bottom: 16px; }
+    .titulo-app { font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; text-align: center; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; }
     .titulo-app span { color: var(--quente); }
+    .btn-tema { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--card2); border: 1.5px solid var(--borda); color: var(--texto); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     
     .abas { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
     .abas::-webkit-scrollbar { display: none; }
@@ -49,6 +64,10 @@
     
     .banner { margin: 16px; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1.5px solid transparent; }
     .banner.verde { background: var(--verde-bg); border-color: var(--verde); }
+    .banner.amarelo { background: var(--amarelo-bg); border-color: var(--amarelo); }
+    .banner.vermelho { background: var(--vermelho-bg); border-color: var(--vermelho); }
+    .banner.amarelo .banner-titulo { color: var(--amarelo); }
+    .banner.vermelho .banner-titulo { color: var(--vermelho); }
     .banner-texto { min-width: 0; flex: 1; }
     .banner-titulo { font-family: 'Oswald', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; color: var(--verde); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .banner-detalhe { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -86,47 +105,37 @@
     .sorteio-num { font-family: 'Oswald', sans-serif; font-size: 0.85rem; color: var(--muted); }
     .sorteio-data { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); }
     .sorteio-bolas { display: flex; flex-wrap: wrap; gap: 6px; }
-    .bola-mini { width: 34px; height: 34px; border-radius: 50%; background: var(--card2); border: 2px solid var(--borda); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.8rem; }
+    .bola-mini { width: var(--bola-tam, 34px); height: var(--bola-tam, 34px); border-radius: 50%; background: var(--card2); border: 2px solid var(--borda); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: var(--bola-fonte, 0.8rem); flex-shrink: 0; }
     .bola-mini.destaque { background: var(--quente-bg); border-color: var(--quente); color: var(--quente); }
+    .bola-mini.acerto { background: var(--verde-bg); border-color: var(--verde); color: var(--verde); }
+    .bola-mini.erro { opacity: 0.4; }
     
     .estrategias { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 16px 14px; }
     .chip { flex: 1; min-width: 80px; padding: 10px 4px; background: var(--card); border: 1.5px solid var(--borda); color: var(--muted); font-weight: 600; font-size: 0.8rem; border-radius: 20px; cursor: pointer; text-align: center; }
     .chip.ativo { background: var(--verde-bg); border-color: var(--verde); color: var(--verde); }
     .ticket { margin: 0 16px 14px; background: var(--card2); border: 2px solid var(--borda); border-radius: 16px; padding: 16px 12px; min-height: 90px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
     
-    .bola-grande { width: 44px; height: 44px; border-radius: 50%; background: var(--card); border: 2px solid var(--verde); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.9rem; color: var(--verde); animation: pop 0.35s ease backwards; }
+    .bola-grande { width: var(--bola-tam-g, 44px); height: var(--bola-tam-g, 44px); border-radius: 50%; background: var(--card); border: 2px solid var(--verde); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: var(--bola-fonte-g, 0.9rem); color: var(--verde); animation: pop 0.35s ease backwards; flex-shrink: 0; }
     @keyframes pop { from { opacity:0; transform: scale(1.5); } to { opacity:1; transform: scale(1); } }
     .btn-carimbar { display: block; width: calc(100% - 32px); margin: 0 16px 16px; background: var(--verde); color: #000; border: none; border-radius: 12px; font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 700; text-transform: uppercase; padding: 16px; cursor: pointer; }
     footer { margin: 24px 16px 0; padding: 16px; border-top: 1px solid var(--borda); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); text-align: center; line-height: 1.6; }
 
-    /* ========================================================
-       💥 AJUSTE EXCLUSIVO PARA AS BOLAS DA LOTOFÁCIL
-       ======================================================== */
-    .sorteio-card .bola-mini {
-      width: 28px !important;
-      height: 28px !important;
-      font-size: 0.7rem !important;
-    }
-    .ticket .bola-grande {
-      width: 32px !important;
-      height: 32px !important;
-      font-size: 0.75rem !important;
-    }
-    @media (max-width: 400px) {
-      .sorteio-card .sorteio-bolas {
-        gap: 4px !important;
-      }
-      .sorteio-card .bola-mini {
-        width: 26px !important;
-        height: 26px !important;
-        font-size: 0.68rem !important;
-      }
-      .ticket .bola-grande {
-        width: 28px !important;
-        height: 28px !important;
-        font-size: 0.7rem !important;
-      }
-    }
+    /* Detalhamento (top 5) */
+    .top5-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 16px 16px; }
+    .top5-card { background: var(--card); border: 1.5px solid var(--borda); border-radius: 12px; padding: 12px; }
+    .top5-titulo { font-family: 'Oswald', sans-serif; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .top5-item { display: flex; justify-content: space-between; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 4px 0; }
+    .top5-num { font-weight: 700; }
+    .top5-val { color: var(--muted); font-size: 0.72rem; }
+
+    /* Conferir aposta */
+    .conferir-box { margin: 0 16px 16px; background: var(--card); border: 1.5px solid var(--borda); border-radius: 12px; padding: 14px; }
+    .conferir-input { width: 100%; background: var(--card2); border: 1.5px solid var(--borda); border-radius: 8px; padding: 12px; color: var(--texto); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; margin-bottom: 10px; }
+    .conferir-input::placeholder { color: var(--muted); }
+    .btn-conferir { width: 100%; background: var(--roxo); color: #16161F; border: none; border-radius: 8px; font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; padding: 12px; cursor: pointer; }
+    .conferir-resultado { margin-top: 12px; }
+    .conferir-resumo { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; margin-bottom: 8px; text-align: center; font-weight: 700; }
+    .conferir-erro { color: var(--vermelho); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -138,7 +147,9 @@
 
 <div id="appShell">
     <header>
-        <div class="titulo-app">Painel <span>da Sorte</span></div>
+        <div class="titulo-app">Painel <span>da Sorte</span>
+            <button class="btn-tema" id="btnTema" onclick="alternarTema()" title="Alternar tema">🌙</button>
+        </div>
         <div class="abas">
             <button class="aba ativa" onclick="mudarLoteria('lotofacil')">Lotofácil</button>
             <button class="aba" onclick="mudarLoteria('megasena')">Mega-Sena</button>
@@ -153,10 +164,14 @@
         </div>
     </div>
 
-    <div class="stats-grid">
+    <div class="stats-grid" style="grid-template-columns: repeat(2,1fr);">
         <div class="stat-card">
             <div class="stat-num" id="statConcurso">-</div>
             <div class="stat-label">Último Sorteio</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num" id="statTotal">-</div>
+            <div class="stat-label">Concursos Analisados</div>
         </div>
         <div class="stat-card">
             <div class="stat-num" id="statSoma">-</div>
@@ -190,6 +205,15 @@
         <div class="grade" id="gradeNumeros"></div>
     </div>
 
+    <div class="top5-wrap" id="top5Wrap"></div>
+
+    <div class="secao-titulo">Conferir Aposta</div>
+    <div class="conferir-box">
+        <input type="text" class="conferir-input" id="conferirInput" placeholder="Digite seus números separados por vírgula ou espaço">
+        <button class="btn-conferir" onclick="conferirAposta()">Conferir com o último resultado</button>
+        <div class="conferir-resultado" id="conferirResultado"></div>
+    </div>
+
     <div class="secao-titulo">Último Resultado Confirmado</div>
     <div id="resultadoContainer"></div>
 
@@ -208,7 +232,7 @@
 
     <footer>
         Painel da Sorte • Atualizado via Automação Integrada<br>
-        <span id="atualizadoEm" style="font-size: 0.65rem; color: #555;">Sincronizando...</span>
+        <span id="atualizadoEm" style="font-size: 0.65rem; color: var(--muted);">Sincronizando...</span>
     </footer>
 </div>
 
@@ -229,6 +253,9 @@ let estrategiaAtual = 'quentes';
 // Inicialização e Busca do JSON
 window.addEventListener('DOMContentLoaded', async () => {
     try {
+        const temaSalvo = localStorage.getItem('temaPainel');
+        if (temaSalvo === 'claro') ativarTemaClaro();
+
         const resposta = await fetch('dados.json');
         dadosGlobais = await resposta.json();
         document.getElementById('overlay').classList.add('oculto');
@@ -239,11 +266,44 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+window.addEventListener('resize', () => aplicarTamanhoBolas());
+
+function ativarTemaClaro() {
+    document.body.classList.add('tema-claro');
+    document.getElementById('btnTema').textContent = '☀️';
+}
+function alternarTema() {
+    const claro = document.body.classList.toggle('tema-claro');
+    document.getElementById('btnTema').textContent = claro ? '☀️' : '🌙';
+    try { localStorage.setItem('temaPainel', claro ? 'claro' : 'escuro'); } catch(e) {}
+}
+
+// Ajusta o tamanho das bolinhas conforme a loteria (Lotofácil tem 15 dezenas por
+// sorteio contra 5-6 das outras) e a largura da tela — sem !important, um só lugar.
+function aplicarTamanhoBolas() {
+    const cfg = CONFIGS[loteriaAtual];
+    const largura = Math.min(window.innerWidth, 600);
+    const qtd = cfg.dezenasPalpite; // 15 na lotofácil, 5-6 nas outras
+    // largura útil menos padding, dividido pela quantidade de bolas + folga pra quebrar linha
+    const porLinha = qtd > 10 ? Math.ceil(qtd / 2) : qtd;
+    let tam = Math.floor((largura - 32 - (porLinha - 1) * 6) / porLinha);
+    tam = Math.max(22, Math.min(44, tam));
+    const fonte = Math.max(0.62, Math.min(0.9, tam / 44 * 0.9));
+
+    document.documentElement.style.setProperty('--bola-tam', `${tam}px`);
+    document.documentElement.style.setProperty('--bola-fonte', `${fonte}rem`);
+    document.documentElement.style.setProperty('--bola-tam-g', `${tam + 6}px`);
+    document.documentElement.style.setProperty('--bola-fonte-g', `${fonte + 0.08}rem`);
+}
+
 function mudarLoteria(nome) {
     loteriaAtual = nome;
     document.querySelectorAll('.aba').forEach((btn, idx) => {
         btn.classList.toggle('ativa', ['lotofacil','megasena','quina'][idx] === nome);
     });
+    aplicarTamanhoBolas();
+    document.getElementById('conferirResultado').innerHTML = '';
+    document.getElementById('conferirInput').value = '';
     renderizarPainel();
 }
 
@@ -280,18 +340,77 @@ function renderizarPainel() {
     const dados = dadosGlobais[loteriaAtual];
     if (!dados) return;
 
-    document.getElementById('concursoBanner').innerText = `${loteriaAtual.toUpperCase()} - CONCURSO ${dados.ultimoConcurso}`;
     document.getElementById('statConcurso').innerText = dados.ultimoConcurso;
+    document.getElementById('statTotal').innerText = dados.totalConcursos ?? (dados.recentDraws?.length || '-');
     document.getElementById('statSoma').innerText = dados.somaMedia;
     document.getElementById('statPares').innerText = dados.paresMedia;
-    
-    const dt = dados.atualizadoEm ? new Date(dados.atualizadoEm).toLocaleString('pt-BR') : 'Hoje';
-    document.getElementById('dataBanner').innerText = `Atualizado automaticamente em: ${dt}`;
-    document.getElementById('atualizadoEm').innerText = `Sincronização oficial Caixa: ${dt}`;
 
+    // Banner de frescor: corresponde de verdade ao que o robô confirmou por último,
+    // em vez de sempre mostrar verde independente da situação.
+    const banner = document.querySelector('.banner');
+    const tituloB = document.getElementById('concursoBanner');
+    const detalheB = document.getElementById('dataBanner');
+    tituloB.innerText = `${loteriaAtual.toUpperCase()} - CONCURSO ${dados.ultimoConcurso}`;
+
+    if (!dados.atualizadoEm) {
+        banner.className = 'banner vermelho';
+        detalheB.innerText = 'O robô ainda não confirmou dados para este jogo';
+    } else {
+        const dt = new Date(dados.atualizadoEm);
+        const diasDesde = Math.floor((Date.now() - dt) / 86400000);
+        const dtFormatada = dt.toLocaleString('pt-BR');
+        if (diasDesde <= 0) {
+            banner.className = 'banner verde';
+            detalheB.innerText = `Confirmado pelo robô hoje, ${dtFormatada}`;
+        } else if (diasDesde <= 2) {
+            banner.className = 'banner amarelo';
+            detalheB.innerText = `Confirmado pelo robô há ${diasDesde} dia(s) — ${dtFormatada}`;
+        } else {
+            banner.className = 'banner vermelho';
+            detalheB.innerText = `Sem confirmação do robô há ${diasDesde} dias — ${dtFormatada}`;
+        }
+    }
+    document.getElementById('atualizadoEm').innerText = dados.atualizadoEm
+        ? `Última checagem do robô: ${new Date(dados.atualizadoEm).toLocaleString('pt-BR')}`
+        : 'Aguardando primeira execução do robô';
+
+    aplicarTamanhoBolas();
     renderizarGrade();
+    renderizarTop5();
     renderizarUltimoSorteio();
     document.getElementById('ticketPalpite').innerHTML = '<span style="color: var(--muted); font-size: 0.85rem;">Clique abaixo para gerar um jogo inteligente...</span>';
+}
+
+// Mais detalhe na análise: top 5 números mais quentes e mais atrasados, sempre
+// visível (não depende de hover, que não funciona bem no celular).
+function renderizarTop5() {
+    const dados = dadosGlobais[loteriaAtual];
+    const cfg = CONFIGS[loteriaAtual];
+    const wrap = document.getElementById('top5Wrap');
+
+    const lista = [];
+    for (let i = 1; i <= cfg.max; i++) {
+        lista.push({ num: i, freq: dados.frequencia[i] || 0, atraso: dados.atraso[i] || 0 });
+    }
+    const top5Freq = [...lista].sort((a,b) => b.freq - a.freq).slice(0,5);
+    const top5Atraso = [...lista].sort((a,b) => b.atraso - a.atraso).slice(0,5);
+
+    const linha = (item, campo, sufixo) => `
+        <div class="top5-item">
+            <span class="top5-num">${String(item.num).padStart(2,'0')}</span>
+            <span class="top5-val">${item[campo]}${sufixo}</span>
+        </div>`;
+
+    wrap.innerHTML = `
+        <div class="top5-card">
+            <div class="top5-titulo">🔥 Top 5 Mais Sorteados</div>
+            ${top5Freq.map(i => linha(i, 'freq', 'x')).join('')}
+        </div>
+        <div class="top5-card">
+            <div class="top5-titulo">❄️ Top 5 Mais Atrasados</div>
+            ${top5Atraso.map(i => linha(i, 'atraso', ' concursos')).join('')}
+        </div>
+    `;
 }
 
 function renderizarGrade() {
@@ -370,6 +489,46 @@ function renderizarUltimoSorteio() {
         </div>
     `;
     container.appendChild(card);
+}
+
+function conferirAposta() {
+    const dados = dadosGlobais[loteriaAtual];
+    const cfg = CONFIGS[loteriaAtual];
+    const container = document.getElementById('conferirResultado');
+    const bruto = document.getElementById('conferirInput').value;
+
+    if (!dados.recentDraws || dados.recentDraws.length === 0) {
+        container.innerHTML = `<div class="conferir-erro">Ainda não há resultado confirmado para comparar.</div>`;
+        return;
+    }
+
+    // Aceita números separados por vírgula, espaço ou ambos
+    const numeros = [...new Set(
+        bruto.split(/[\s,]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n))
+    )];
+
+    if (numeros.length === 0) {
+        container.innerHTML = `<div class="conferir-erro">Digite pelo menos um número.</div>`;
+        return;
+    }
+    const invalidos = numeros.filter(n => n < 1 || n > cfg.max);
+    if (invalidos.length > 0) {
+        container.innerHTML = `<div class="conferir-erro">${loteriaAtual.toUpperCase()} vai de 1 a ${cfg.max}. Número(s) fora da faixa: ${invalidos.join(', ')}</div>`;
+        return;
+    }
+
+    const ult = dados.recentDraws[dados.recentDraws.length - 1];
+    const sorteados = new Set(ult.dezenas);
+    const acertos = numeros.filter(n => sorteados.has(n));
+
+    container.innerHTML = `
+        <div class="conferir-resumo">${acertos.length} acerto(s) no concurso ${ult.concurso}</div>
+        <div class="sorteio-bolas" style="justify-content:center;">
+            ${numeros.sort((a,b)=>a-b).map(n => `
+                <div class="bola-mini ${sorteados.has(n) ? 'acerto' : 'erro'}">${String(n).padStart(2,'0')}</div>
+            `).join('')}
+        </div>
+    `;
 }
 
 function gerarPalpite() {
