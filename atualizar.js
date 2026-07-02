@@ -18,14 +18,14 @@ async function rodar() {
     for (const loteria of loterias) {
       console.log(`Buscando ${loteria}...`);
       try {
-        const response = await fetch(`${API_URL}/${loteria}/latest`);
+        const response = await fetch(`${API_BASE}/${loteria}`);
         if (!response.ok) {
           console.log(`API indisponível para ${loteria}, pulando...`);
           continue;
         }
 
         const dadosAPI = await response.json();
-        const concursoNovo = Number(dadosAPI.concurso);
+        const concursoNovo = Number(dadosAPI.numero);
 
         if (!dadosAtuais[loteria] || concursoNovo > (dadosAtuais[loteria].ultimoConcurso || 0)) {
           console.log(`Novo concurso para ${loteria}: ${concursoNovo}`);
@@ -34,12 +34,16 @@ async function rodar() {
           for (let i = Math.max(1, concursoNovo - 29); i <= concursoNovo; i++) nums.push(i);
 
           const resultados = await Promise.all(
-            nums.map(n => fetch(`${API_URL}/${loteria}/${n}`).then(r => r.ok ? r.json() : null).catch(() => null))
+            nums.map(n => fetch(`${API_BASE}/${loteria}/${n}`).then(r => r.ok ? r.json() : null).catch(() => null))
           );
 
-          const recentesValidos = resultados
-            .filter(r => r && r.dezenas)
-            .map(r => ({ concurso: Number(r.concurso), data: r.data, dezenas: r.dezenas.map(Number) }));
+         const recentesValidos = resultados
+  .filter(r => r && r.listaDezenas)
+  .map(r => ({
+    concurso: Number(r.numero),
+    data: r.dataApuracao,
+    dezenas: r.listaDezenas.map(Number)
+  }));
 
           dadosAtuais[loteria] = {
             ultimoConcurso: concursoNovo,
@@ -56,7 +60,7 @@ async function rodar() {
             dadosAtuais[loteria].atraso[i] = (dadosAtuais[loteria].atraso[i] || 0) + 1;
           }
           
-          dadosAPI.dezenas.map(Number).forEach(num => {
+          dadosAPI.listaDezenas.map(Number).forEach(num => {
             dadosAtuais[loteria].frequencia[num] = (dadosAtuais[loteria].frequencia[num] || 0) + 1;
             dadosAtuais[loteria].atraso[num] = 0;
           });
