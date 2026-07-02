@@ -1,244 +1,303 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel da Sorte - Estatísticas</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #f4f6f9;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --mega: #209869;
-            --quina: #260085;
-            --lotofacil: #930089;
-            --border-radius: 12px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel da Sorte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght=500;600;700&family=JetBrains+Mono:wght=400;600;700&family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0A0A0F;
+  --card:     #14141C;
+  --card2:    #1C1C28;
+  --borda:    #2A2A3A;
+  --texto:    #F0F0F8;
+  --muted:    #7A7A9A;
+  --quente:   #FF6B35;
+  --quente-bg:#2A1A10;
+  --frio:     #4DB8FF;
+  --frio-bg:  #0A1E2A;
+  --verde:    #4ADE80;
+  --verde-bg: #0A2014;
+  --amarelo:  #FACC15;
+  --amarelo-bg:#201A04;
+  --vermelho: #F87171;
+  --vermelho-bg:#200A0A;
+  --roxo:     #A78BFA;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050507; color: var(--texto); font-family: 'Inter', sans-serif; min-height: 100vh; padding-bottom: 40px; }
+#appShell { max-width: 600px; margin: 0 auto; background: var(--bg); min-height: 100vh; box-shadow: 0 0 60px rgba(0,0,0,0.5); }
+@media (min-width: 600px) { #appShell { border-left: 1px solid var(--borda); border-right: 1px solid var(--borda); } }
+#overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; z-index: 999; padding: 32px; text-align: center; }
+#overlay.oculto { display: none; }
+.spinner { width: 48px; height: 48px; border: 4px solid var(--borda); border-top-color: var(--quente); border-radius: 50%; animation: girar 0.9s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+header { background: var(--card); border-bottom: 2px solid var(--borda); padding: 20px 16px 0; position: sticky; top: 0; z-index: 50; }
+.titulo-app { font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; text-align: center; margin-bottom: 16px; }
+.titulo-app span { color: var(--quente); }
+.abas { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.abas::-webkit-scrollbar { display: none; }
+.aba { flex: 1; min-width: 90px; padding: 14px 8px; background: none; border: none; color: var(--muted); font-family: 'Oswald', sans-serif; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; cursor: pointer; border-bottom: 3px solid transparent; text-align: center; }
+.aba.ativa { color: var(--quente); border-bottom-color: var(--quente); }
+.banner { margin: 16px; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1.5px solid transparent; }
+.banner.verde { background: var(--verde-bg); border-color: var(--verde); }
+.banner-texto { min-width: 0; flex: 1; }
+.banner-titulo { font-family: 'Oswald', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; color: var(--verde); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.banner-detalhe { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn-atualizar { background: var(--quente); color: #fff; border: none; border-radius: 8px; font-family: 'Oswald', sans-serif; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; padding: 10px 14px; cursor: pointer; flex-shrink: 0; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 16px 16px; }
+.stat-card { background: var(--card); border: 1.5px solid var(--borda); border-radius: 12px; padding: 12px 6px; text-align: center; }
+.stat-num { font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 700; }
+.stat-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; display: block; margin-top: 4px; }
+.secao-titulo { font-family: 'Oswald', sans-serif; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.secao-titulo::after { content: ''; flex: 1; height: 1px; background: var(--borda); }
+.toggle-row { display: flex; gap: 8px; margin: 0 16px 12px; }
+.toggle-btn { flex: 1; padding: 12px 8px; background: var(--card); border: 2px solid var(--borda); color: var(--muted); font-weight: 600; border-radius: 8px; cursor: pointer; text-align: center; font-size: 0.9rem; }
+.toggle-btn.ativo-freq { background: var(--quente-bg); border-color: var(--quente); color: var(--quente); }
+.toggle-btn.ativo-atraso { background: var(--frio-bg); border-color: var(--frio); color: var(--frio); }
+.periodo-row { display: flex; gap: 6px; margin: 0 16px 16px; overflow-x: auto; scrollbar-width: none; }
+.periodo-btn { padding: 10px 16px; background: var(--card); border: 1.5px solid var(--borda); color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; border-radius: 20px; cursor: pointer; white-space: nowrap; }
+.periodo-btn.ativo { background: var(--card2); border-color: var(--roxo); color: var(--roxo); }
+.legenda-grade { display: flex; align-items: center; gap: 10px; margin: 0 16px 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+.legenda-barra { flex: 1; height: 6px; border-radius: 3px; }
+.legenda-barra.freq { background: linear-gradient(to right, var(--card2), var(--quente)); }
+.legenda-barra.atraso { background: linear-gradient(to right, var(--card2), var(--frio)); }
+.grade-wrap { margin: 0 16px 20px; display: flex; justify-content: center; }
+.grade { display: grid; gap: 6px; justify-content: center; width: 100%; }
+.bolinha { aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--borda); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--texto); position: relative; }
+.bolinha .dica { position: absolute; bottom: 115%; left: 50%; transform: translateX(-50%); background: var(--card2); border: 1px solid var(--borda); color: var(--texto); font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; opacity: 0; pointer-events: none; z-index: 10; white-space: nowrap; }
+.bolinha:hover .dica { opacity: 1; }
+.sorteio-card { background: var(--card); border: 1.5px solid var(--borda); border-radius: 12px; padding: 14px 16px; margin: 0 16px 10px; }
+.sorteio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.sorteio-num { font-family: 'Oswald', sans-serif; font-size: 0.85rem; color: var(--muted); }
+.sorteio-data { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); }
+.sorteio-bolas { display: flex; flex-wrap: wrap; gap: 6px; }
+.bola-mini { width: 34px; height: 34px; border-radius: 50%; background: var(--card2); border: 2px solid var(--borda); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.8rem; }
+.bola-mini.destaque { background: var(--quente-bg); border-color: var(--quente); color: var(--quente); }
+.freq-recente { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 0 16px 20px; }
+.freq-card { background: var(--card); border: 1.5px solid var(--borda); border-radius: 12px; padding: 12px; }
+.freq-card-titulo { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+.freq-bolas { display: flex; flex-wrap: wrap; gap: 5px; }
+.badge { padding: 4px 8px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; }
+.badge-quente { background: var(--quente-bg); color: var(--quente); }
+.badge-frio { background: var(--frio-bg); color: var(--frio); }
+.estrategias { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 16px 14px; }
+.chip { flex: 1; min-width: 80px; padding: 10px 4px; background: var(--card); border: 1.5px solid var(--borda); color: var(--muted); font-weight: 600; font-size: 0.8rem; border-radius: 20px; cursor: pointer; text-align: center; }
+.chip.ativo { background: var(--verde-bg); border-color: var(--verde); color: var(--verde); }
+.ticket { margin: 0 16px 14px; background: var(--card2); border: 2px solid var(--borda); border-radius: 16px; padding: 16px 12px; min-height: 90px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        header {
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 1.8rem;
-            color: #0f172a;
-            margin-bottom: 4px;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-            border-top: 5px solid #ccc;
-        }
-
-        .card.mega { border-top-color: var(--mega); }
-        .card.quina { border-top-color: var(--quina); }
-        .card.lotofacil { border-top-color: var(--lotofacil); }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .mega .card-title { color: var(--mega); }
-        .quina .card-title { color: var(--quina); }
-        .lotofacil .card-title { color: var(--lotofacil); }
-
-        .badge-concurso {
-            background: #f1f5f9;
-            color: var(--text-muted);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        /* O SEGREDO DO NOVO LAYOUT: Bolas compactas e elegantes */
-        .dezenas-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .bola {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: white;
-            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
-        }
-
-        .mega .bola { background: var(--mega); }
-        .quina .bola { background: var(--quina); }
-        .lotofacil .bola { background: var(--lotofacil); }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-        }
-
-        .stat-item span {
-            display: block;
-            color: var(--text-muted);
-            margin-bottom: 2px;
-        }
-
-        .stat-item strong {
-            color: #334155;
-            font-size: 1rem;
-        }
-
-        .error-msg {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            text-align: center;
-            display: none;
-            width: 100%;
-            max-width: 600px;
-        }
-    </style>
+/* OTIMIZAÇÃO EXTRA: Bolas do palpite menores para não quebrar no mobile */
+.bola-grande { width: 44px; height: 44px; border-radius: 50%; background: var(--card); border: 2px solid var(--verde); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.9rem; color: var(--verde); animation: pop 0.35s ease backwards; }
+@keyframes pop { from { opacity:0; transform: scale(1.5); } to { opacity:1; transform: scale(1); } }
+.btn-carimbar { display: block; width: calc(100% - 32px); margin: 0 16px 16px; background: var(--verde); color: #000; border: none; border-radius: 12px; font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 700; text-transform: uppercase; padding: 16px; cursor: pointer; }
+footer { margin: 24px 16px 0; padding: 16px; border-top: 1px solid var(--borda); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); text-align: center; line-height: 1.6; }
+</style>
 </head>
 <body>
-
-    <header>
-        <h1>Painel da Sorte 🍀</h1>
-        <p>Estatísticas e Resultados Atualizados Diariamente</p>
-    </header>
-
-    <div id="erro" class="error-msg">Aguardando preenchimento dos dados do robô...</div>
-
-    <div class="container" id="painel">
-        <div class="card mega" id="card-megasena">
-            <div class="card-header">
-                <span class="card-title">Mega-Sena</span>
-                <span class="badge-concurso" id="concurso-megasena">Concurso ---</span>
-            </div>
-            <div class="dezenas-grid" id="dezenas-megasena"></div>
-            <div class="stats-grid">
-                <div class="stat-item"><span>Média da Soma</span><strong id="soma-megasena">---</strong></div>
-                <div class="stat-item"><span>Média de Pares</span><strong id="pares-megasena">---</strong></div>
-            </div>
-        </div>
-
-        <div class="card quina" id="card-quina">
-            <div class="card-header">
-                <span class="card-title">Quina</span>
-                <span class="badge-concurso" id="concurso-quina">Concurso ---</span>
-            </div>
-            <div class="dezenas-grid" id="dezenas-quina"></div>
-            <div class="stats-grid">
-                <div class="stat-item"><span>Média da Soma</span><strong id="soma-quina">---</strong></div>
-                <div class="stat-item"><span>Média de Pares</span><strong id="pares-quina">---</strong></div>
-            </div>
-        </div>
-
-        <div class="card lotofacil" id="card-lotofacil">
-            <div class="card-header">
-                <span class="card-title">Lotofácil</span>
-                <span class="badge-concurso" id="concurso-lotofacil">Concurso ---</span>
-            </div>
-            <div class="dezenas-grid" id="dezenas-lotofacil"></div>
-            <div class="stats-grid">
-                <div class="stat-item"><span>Média da Soma</span><strong id="soma-lotofacil">---</strong></div>
-                <div class="stat-item"><span>Média de Pares</span><strong id="pares-lotofacil">---</strong></div>
-            </div>
-        </div>
+<div id="overlay"><div class="spinner"></div><div style="font-family:'Oswald';font-size:1.2rem;text-transform:uppercase;">Carregando Estatísticas Sincronizadas...</div></div>
+<div id="appShell">
+  <header>
+    <div class="titulo-app">Painel da <span>Sorte</span></div>
+    <div class="abas" id="abas"></div>
+  </header>
+  <div id="appBody">
+    <div style="height:16px"></div>
+    <div class="banner" id="banner">
+      <div class="banner-texto">
+        <span class="banner-titulo" id="bannerTitulo">✓ Conectado Localmente</span>
+        <span class="banner-detalhe" id="bannerDetalhe">Atualizado automaticamente pelo Robô GitHub</span>
+      </div>
+      <button class="btn-atualizar" id="btnAtualizar">Atualizar</button>
     </div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="secao-titulo" style="margin:0 16px 12px"><span>mapa de números</span></div>
+    <div class="toggle-row">
+      <button class="toggle-btn" id="btnFreq">🔥 Frequência</button>
+      <button class="toggle-btn" id="btnAtraso">❄️ Atraso</button>
+    </div>
+    <div class="periodo-row" id="periodoRow"></div>
+    <div class="legenda-grade" id="legendaGrade"><span>menos</span><div class="legenda-barra freq" id="legendaBarra"></div><span>mais</span></div>
+    <div class="grade-wrap"><div class="grade" id="grade"></div></div>
+    <div id="secaoRecente"></div>
+    <div class="secao-titulo" style="margin:0 16px 12px"><span>gerar palpite</span></div>
+    <div class="estrategias" id="estrategias"></div>
+    <div class="ticket" id="ticket"></div>
+    <button class="btn-carimbar" id="btnCarimbar">🎲 Novo palpite</button>
+    <footer>Cada sorteio é independente e aleatório — utilize para fins estatísticos e entretenimento.</footer>
+  </div>
+</div>
+<script>
+let dados = {};
+const CONFIG = {
+  megasena:  { nome:"Mega-Sena",  min:1, max:60, cols:10, dezenas:6  },
+  quina:     { nome:"Quina",      min:1, max:80, cols:10, dezenas:5  },
+  lotofacil: { nome:"Lotofácil",  min:1, max:25, cols:5,  dezenas:15 },
+};
+let loteriaAtual = "megasena";
+let modoAtual    = "frequencia";
+let periodoAtual = "todos";
+let estrategia   = "mista";
+const $ = s => document.querySelector(s);
 
-    <script>
-        async function carregarDados() {
-            try {
-                // Lê o arquivo de dados alimentado pelo robô
-                const response = await fetch('dados.json?t=' + new Date().getTime());
-                if (!response.ok) throw new Error();
-                const dados = await response.json();
+function calcPeriodo(key, n){
+  const d = dados[key]; const draws = d.recentDraws;
+  if (!draws || draws.length === 0 || n === "todos") return null;
+  const cfg = CONFIG[key]; const ultimos = draws.slice(-n);
+  const freq = {}; const uvisto = {};
+  for (let num = cfg.min; num <= cfg.max; num++) freq[num] = 0;
+  ultimos.forEach(({concurso, dezenas}) => {
+    dezenas.forEach(dz => { freq[dz]++; uvisto[dz] = concurso; });
+  });
+  const ultimo = ultimos[ultimos.length-1].concurso; const atraso = {};
+  for (let num = cfg.min; num <= cfg.max; num++){
+    atraso[num] = uvisto[num] !== undefined ? ultimo - uvisto[num] : n;
+  }
+  return { freq, atraso, total: ultimos.length };
+}
+function renderAbas(){
+  const el = $("#abas"); el.innerHTML = "";
+  Object.keys(CONFIG).forEach(k => {
+    const b = document.createElement("button");
+    b.className = "aba" + (k === loteriaAtual ? " ativa" : "");
+    b.textContent = CONFIG[k].nome;
+    b.onclick = () => { loteriaAtual = k; periodoAtual = "todos"; renderTudo(); };
+    el.appendChild(b);
+  });
+}
+function renderBanner(){
+  const d = dados[loteriaAtual];
+  if(d && d.atualizadoEm) {
+    const dataFmt = new Date(d.atualizadoEm).toLocaleString('pt-BR');
+    $("#bannerDetalhe").textContent = `Concurso ${d.ultimoConcurso} · Atualizado: ${dataFmt}`;
+  }
+}
+function renderStats(){
+  const d = dados[loteriaAtual]; const cfg = CONFIG[loteriaAtual];
+  $("#statsGrid").innerHTML = `
+    <div class="stat-card"><span class="stat-num">${d.ultimoConcurso}</span><span class="stat-label">Último concurso</span></div>
+    <div class="stat-card"><span class="stat-num">${d.somaMedia}</span><span class="stat-label">Soma média</span></div>
+    <div class="stat-card"><span class="stat-num">${d.paresMedia}/${cfg.dezenas}</span><span class="stat-label">Pares/sorteio</span></div>
+  `;
+}
+function renderToggle(){
+  $("#btnFreq").className = "toggle-btn" + (modoAtual==="frequencia" ? " ativo-freq" : "");
+  $("#btnAtraso").className = "toggle-btn" + (modoAtual==="atraso" ? " ativo-atraso" : "");
+}
+function renderPeriodoRow(){
+  const d = dados[loteriaAtual]; const temRecentes = d.recentDraws && d.recentDraws.length >= 5;
+  const opcoes = [{ key:"todos", label:"Todos os sorteios" }, { key:"10", label:"Últimos 10", min:10 }, { key:"5", label:"⚡ Últimos 5", min:5 }];
+  const row = $("#periodoRow"); row.innerHTML = "";
+  opces = opcoes.forEach(op => {
+    if (op.min && (!temRecentes || d.recentDraws.length < op.min)) return;
+    const b = document.createElement("button");
+    b.className = "periodo-btn" + (periodoAtual === op.key ? " ativo" : "");
+    b.textContent = op.label;
+    b.onclick = () => { periodoAtual = op.key; renderPeriodoRow(); renderGrade(); renderSecaoRecente(); };
+    row.appendChild(b);
+  });
+}
+function renderGrade(){
+  const cfg = CONFIG[loteriaAtual]; const d = dados[loteriaAtual];
+  let fonte, fonteAtraso;
+  if (periodoAtual !== "todos"){
+    const p = calcPeriodo(loteriaAtual, Number(periodoAtual));
+    if (p){ fonte = p.freq; fonteAtraso = p.atraso; }
+    else  { fonte = d.frequencia; fonteAtraso = d.atraso; }
+  } else { fonte = d.frequencia; fonteAtraso = d.atraso; }
+  const vals = modoAtual === "frequencia" ? Object.values(fonte) : Object.values(fonteAtraso);
+  const min = Math.min(...vals); const max = Math.max(...vals);
+  const grade = $("#grade"); const colunasVisuais = cfg.cols;
+  
+  // Cálculo fluido do tamanho das células para caber na tela sem quebrar
+  const larguraDisponivel = Math.min(window.innerWidth, 600) - 32;
+  const larguraCelula = Math.floor((larguraDisponivel - (colunasVisuais - 1) * 6) / colunasVisuais);
+  
+  grade.style.gridTemplateColumns = `repeat(${colunasVisuais}, ${larguraCelula}px)`; grade.innerHTML = "";
+  for (let n = cfg.min; n <= cfg.max; n++){
+    const vFreq = fonte[n] ?? 0; const vAtraso = fonteAtraso[n] ?? 0;
+    const val = modoAtual === "frequencia" ? vFreq : vAtraso;
+    const t = max === min ? 0.5 : (val - min) / (max - min); const alpha = 0.15 + t * 0.80;
+    const b = document.createElement("div"); b.className = "bolinha";
+    b.style.width = larguraCelula + "px"; b.style.fontSize = larguraCelula < 36 ? "0.75rem" : "0.85rem";
+    if (modoAtual === "frequencia"){
+      b.style.background = `rgba(255,107,53,${alpha.toFixed(2)})`; b.style.borderColor = alpha > 0.5 ? "var(--quente)" : "var(--borda)";
+    } else {
+      b.style.background = `rgba(77,184,255,${alpha.toFixed(2)})`; b.style.borderColor = alpha > 0.5 ? "var(--frio)" : "var(--borda)";
+    }
+    b.textContent = String(n).padStart(2,"0");
+    const dica = document.createElement("span"); dica.className = "dica";
+    dica.textContent = modoAtual === "frequencia" ? `saiu ${vFreq}x` : `${vAtraso} sem sair`;
+    b.appendChild(dica); grade.appendChild(b);
+  }
+}
+function renderSecaoRecente(){
+  const wrap = $("#secaoRecente"); wrap.innerHTML = ""; const d = dados[loteriaAtual];
+  if (!d.recentDraws || d.recentDraws.length === 0) return;
+  const n = periodoAtual === "todos" ? 5 : Number(periodoAtual); const ultimos = d.recentDraws.slice(-n);
+  const freq = {}; ultimos.forEach(({dezenas}) => dezenas.forEach(dz => { freq[dz] = (freq[dz]||0)+1; }));
+  const quentesR = Object.entries(freq).filter(([,v]) => v >= 2).map(([k]) => Number(k)).sort((a,b)=>a-b);
+  const cfg = CONFIG[loteriaAtual]; const ausentes = Array.from({length: cfg.max - cfg.min + 1}, (_,i) => cfg.min + i).filter(n => !freq[n]);
+  const titulo = document.createElement("div"); titulo.className = "secao-titulo"; titulo.style.cssText = "margin:0 16px 12px";
+  titulo.innerHTML = `<span>⚡ últimos ${ultimos.length} sorteios</span>`; wrap.appendChild(titulo);
+  const grid = document.createElement("div"); grid.className = "freq-recente";
+  if (quentesR.length > 0){
+    const card = document.createElement("div"); card.className = "freq-card";
+    card.innerHTML = `<div class="freq-card-titulo">🔥 Repetidos</div><div class="freq-bolas">${quentesR.map(n => `<span class="badge badge-quente">${String(n).padStart(2,"0")}</span>`).join("")}</div>`;
+    grid.appendChild(card);
+  }
+  const ausTop = ausentes.sort((a,b)=>(d.atraso[b]||0)-(d.atraso[a]||0)).slice(0,10);
+  if (ausTop.length > 0){
+    const card2 = document.createElement("div"); card2.className = "freq-card";
+    card2.innerHTML = `<div class="freq-card-titulo">❄️ Ausentes</div><div class="freq-bolas">${ausTop.map(n => `<span class="badge badge-frio">${String(n).padStart(2,"0")}</span>`).join("")}</div>`;
+    grid.appendChild(card2);
+  }
+  wrap.appendChild(grid);
+  ultimos.slice().reverse().forEach(({concurso, data, dezenas}) => {
+    const card = document.createElement("div"); card.className = "sorteio-card";
+    card.innerHTML = `<div class="sorteio-header"><span class="sorteio-num">Concurso ${concurso}</span><span class="sorteio-data">${data || ""}</span></div><div class="sorteio-bolas">${dezenas.map(n => `<div class="bola-mini${(freq[n]||0) >= 2 ? " destaque" : ""}">${String(n).padStart(2,"0")}</div>`).join("")}</div>`;
+    wrap.appendChild(card);
+  });
+}
+function renderEstrategias(){
+  const wrap = $("#estrategias"); wrap.innerHTML = "";
+  [{key:"quentes", label:"🔥 Quentes"}, {key:"frios", label:"❄️ Frios"}, {key:"mista", label:"⚖️ Mista"}, {key:"aleatoria",label:"🎲 Aleatória"}].forEach(op => {
+    const b = document.createElement("button"); b.className = "chip" + (estrategia === op.key ? " ativo" : ""); b.textContent = op.label;
+    b.onclick = () => { estrategia = op.key; renderEstrategias(); gerarPalpite(); }; wrap.appendChild(b);
+  });
+}
+function gerarPalpite(){
+  const cfg = CONFIG[loteriaAtual]; const d = dados[loteriaAtual]; if(!d) return;
+  const todos = Array.from({length: cfg.max-cfg.min+1}, (_,i) => cfg.min+i); let comb;
+  if (estrategia === "aleatoria") comb = amostra(todos, cfg.dezenas);
+  else {
+    const fOrd = Object.entries(d.frequencia).sort((a,b)=>b[1]-a[1]).map(([n])=>Number(n));
+    const aOrd = Object.entries(d.atraso).sort((a,b)=>b[1]-a[1]).map(([n])=>Number(n));
+    let cands = estrategia==="quentes" ? fOrd.slice(0, cfg.dezenas*2) : estrategia==="frios" ? aOrd.slice(0, cfg.dezenas*2) : [...new Set([...fOrd.slice(0,Math.floor(cfg.dezenas/2)+2), ...aOrd.slice(0,Math.floor(cfg.dezenas/2)+2)])];
+    if (cands.length < cfg.dezenas) cands = [...cands, ...todos.filter(n=>!cands.includes(n))];
+    comb = amostra(cands, cfg.dezenas);
+  }
+  comb.sort((a,b)=>a-b); const t = $("#ticket"); t.innerHTML = "";
+  comb.forEach((n, i) => {
+    const b = document.createElement("div"); b.className = "bola-grande"; b.style.animationDelay = (i*0.03)+"s"; b.textContent = String(n).padStart(2,"0"); t.appendChild(b);
+  });
+}
+function amostra(l, q) { const c=[...l], r=[]; for(let i=0;i<q&&c.length;i++) r.push(c.splice(Math.floor(Math.random()*c.length),1)[0]); return r; }
+function renderTudo(){ renderAbas(); renderBanner(); renderStats(); renderToggle(); renderPeriodoRow(); renderGrade(); renderSecaoRecente(); renderEstrategias(); gerarPalpite(); }
 
-                const loterias = ['megasena', 'quina', 'lotofacil'];
-
-                loterias.forEach(loteria => {
-                    const info = dados[loteria];
-                    if (!info || !info.recentDraws || info.recentDraws.length === 0) return;
-
-                    // Pega o último sorteio da lista
-                    const ultimoSorteio = info.recentDraws[info.recentDraws.length - 1];
-
-                    // Atualiza número do concurso e data
-                    document.getElementById(`concurso-${loteria}`).innerText = `Nº ${ultimoSorteio.concurso} (${ultimoSorteio.data})`;
-
-                    // Renderiza as bolas pequenas e elegantes
-                    const grid = document.getElementById(`dezenas-${loteria}`);
-                    grid.innerHTML = '';
-                    ultimoSorteio.dezenas.forEach(num => {
-                        const bola = document.createElement('div');
-                        bola.className = 'bola';
-                        bola.innerText = String(num).padStart(2, '0');
-                        grid.appendChild(bola);
-                    });
-
-                    // Preenche as estatísticas básicas
-                    document.getElementById(`soma-${loteria}`).innerText = info.somaMedia;
-                    document.getElementById(`pares-${loteria}`).innerText = info.paresMedia;
-                });
-
-            } catch (err) {
-                document.getElementById('erro').style.display = 'block';
-                document.getElementById('painel').style.display = 'none';
-            }
-        }
-
-        window.onload = carregarDados;
-    </script>
+async function inicializar(){
+  try {
+    const r = await fetch("dados.json", { cache: "no-store" });
+    if (r.ok) { dados = await r.json(); $("#overlay").classList.add("oculto"); renderTudo(); }
+  } catch(e){ console.error("Aguardando geração do dados.json inicial."); }
+}
+$("#btnFreq").onclick = () => { modoAtual="frequencia"; $("#legendaBarra").className="legenda-barra freq"; renderToggle(); renderGrade(); };
+$("#btnAtraso").onclick = () => { modoAtual="atraso"; $("#legendaBarra").className="legenda-barra atraso"; renderToggle(); renderGrade(); };
+$("#btnAtualizar").onclick = () => window.location.reload();
+$("#btnCarimbar").onclick = gerarPalpite;
+window.addEventListener('resize', renderGrade);
+inicializar();
+</script>
 </body>
 </html>
