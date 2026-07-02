@@ -8,23 +8,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght=500;600;700&family=JetBrains+Mono:wght=400;600;700&family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:       #0A0A0F;
-  --card:     #14141C;
-  --card2:    #1C1C28;
-  --borda:    #2A2A3A;
-  --texto:    #F0F0F8;
-  --muted:    #7A7A9A;
-  --quente:   #FF6B35;
+  --bg:        #0A0A0F;
+  --card:      #14141C;
+  --card2:     #1C1C28;
+  --borda:     #2A2A3A;
+  --texto:     #F0F0F8;
+  --muted:     #7A7A9A;
+  --quente:    #FF6B35;
   --quente-bg:#2A1A10;
-  --frio:     #4DB8FF;
-  --frio-bg:  #0A1E2A;
-  --verde:    #4ADE80;
+  --frio:      #4DB8FF;
+  --frio-bg:   #0A1E2A;
+  --verde:     #4ADE80;
   --verde-bg: #0A2014;
-  --amarelo:  #FACC15;
+  --amarelo:   #FACC15;
   --amarelo-bg:#201A04;
   --vermelho: #F87171;
   --vermelho-bg:#200A0A;
-  --roxo:     #A78BFA;
+  --roxo:      #A78BFA;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #050507; color: var(--texto); font-family: 'Inter', sans-serif; min-height: 100vh; padding-bottom: 40px; }
@@ -93,6 +93,35 @@ header { background: var(--card); border-bottom: 2px solid var(--borda); padding
 @keyframes pop { from { opacity:0; transform: scale(1.5); } to { opacity:1; transform: scale(1); } }
 .btn-carimbar { display: block; width: calc(100% - 32px); margin: 0 16px 16px; background: var(--verde); color: #000; border: none; border-radius: 12px; font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 700; text-transform: uppercase; padding: 16px; cursor: pointer; }
 footer { margin: 24px 16px 0; padding: 16px; border-top: 1px solid var(--borda); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); text-align: center; line-height: 1.6; }
+
+/* ========================================================
+   💥 AJUSTE EXCLUSIVO PARA AS BOLAS DA LOTOFÁCIL
+   ======================================================== */
+.sorteio-card .bola-mini {
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 0.7rem !important;
+}
+.ticket .bola-grande {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 0.75rem !important;
+}
+@media (max-width: 400px) {
+  .sorteio-card .sorteio-bolas {
+    gap: 4px !important;
+  }
+  .sorteio-card .bola-mini {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.68rem !important;
+  }
+  .ticket .bola-grande {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.7rem !important;
+  }
+}
 </style>
 </head>
 <body>
