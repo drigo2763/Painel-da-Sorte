@@ -1,17 +1,18 @@
 name: Robo Loteria
-
 on:
   schedule:
-    - cron: '30 23 * * *' # Roda todos os dias às 23:30 UTC
+    # 22:00 horário de Brasília (01:00 UTC) — o sorteio começa às 21h e o resultado
+    # sai uns 15 min depois. Isso dá quase 1h de folga.
+    - cron: '0 1 * * *'
+    # Reforço de segurança às 08:00 de Brasília (11:00 UTC): se a Caixa publicar
+    # atrasado ou a execução da noite falhar, essa pega o resultado de qualquer jeito.
+    - cron: '0 11 * * *'
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout do repositório
         uses: actions/checkout@v4
@@ -25,18 +26,21 @@ jobs:
 
       - name: Rodar script de atualização
         run: node atualizar.js
-        continue-on-error: true
+        # SEM continue-on-error: se o robô quebrar de verdade, a execução deve
+        # aparecer vermelha no GitHub Actions — do contrário a falha fica invisível
+        # para sempre e ninguém percebe que o painel parou de atualizar.
 
       - name: Salvar modificações no dados.json
         run: |
           git config --global user.name "Robo Loteria"
           git config --global user.email "bot@github.com"
-
           git add dados.json
-
           if git diff --cached --quiet; then
             echo "Nenhuma alteração para enviar."
           else
             git commit -m "🤖 Dados das loterias atualizados"
-            git push --force
+            # pull --rebase em vez de push --force: se alguém commitou algo manualmente
+            # entre o checkout e agora, isso combina as mudanças em vez de apagá-las.
+            git pull --rebase origin main
+            git push
           fi
