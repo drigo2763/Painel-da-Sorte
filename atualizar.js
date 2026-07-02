@@ -44,6 +44,7 @@ async function rodar() {
       const concursoNovo = Number(ultimo.numero);
       const base = dadosAtuais[loteria] || {
         ultimoConcurso: 0,
+        totalConcursos: 0,
         somaMedia: SOMA_MEDIA_INICIAL[loteria],
         paresMedia: PARES_MEDIA_INICIAL[loteria],
         frequencia: {},
@@ -89,6 +90,7 @@ async function rodar() {
           dezenas
         });
 
+        base.totalConcursos = (base.totalConcursos || 0) + 1;
         base.ultimoConcurso = n;
       }
 
