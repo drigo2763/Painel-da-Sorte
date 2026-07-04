@@ -237,7 +237,6 @@
 </div>
 
 <script>
-// Configurações Globais das Loterias
 const CONFIGS = {
     lotofacil: { max: 25, colunas: 5, dezenasPalpite: 15, corBg: 'rgba(255,107,53,', corFrio: 'rgba(77,184,255,' },
     megasena:  { max: 60, colunas: 6, dezenasPalpite: 6,  corBg: 'rgba(255,107,53,', corFrio: 'rgba(77,184,255,' },
@@ -250,11 +249,10 @@ let modoAtual = 'freq';
 let periodoAtual = 0;
 let estrategiaAtual = 'quentes';
 
-// Inicialização e Busca do JSON
 window.addEventListener('DOMContentLoaded', async () => {
     try {
         const temaSalvo = localStorage.getItem('temaPainel');
-        if (temaSalvo === 'claro') ativarTemaClaro();
+        if (temaSalvo === 'claro') activarTemaClaro();
 
         const resposta = await fetch('dados.json');
         dadosGlobais = await resposta.json();
@@ -268,7 +266,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 window.addEventListener('resize', () => aplicarTamanhoBolas());
 
-function ativarTemaClaro() {
+function activarTemaClaro() {
     document.body.classList.add('tema-claro');
     document.getElementById('btnTema').textContent = '☀️';
 }
@@ -278,13 +276,10 @@ function alternarTema() {
     try { localStorage.setItem('temaPainel', claro ? 'claro' : 'escuro'); } catch(e) {}
 }
 
-// Ajusta o tamanho das bolinhas conforme a loteria (Lotofácil tem 15 dezenas por
-// sorteio contra 5-6 das outras) e a largura da tela — sem !important, um só lugar.
 function aplicarTamanhoBolas() {
     const cfg = CONFIGS[loteriaAtual];
     const largura = Math.min(window.innerWidth, 600);
-    const qtd = cfg.dezenasPalpite; // 15 na lotofácil, 5-6 nas outras
-    // largura útil menos padding, dividido pela quantidade de bolas + folga pra quebrar linha
+    const qtd = cfg.dezenasPalpite;
     const porLinha = qtd > 10 ? Math.ceil(qtd / 2) : qtd;
     let tam = Math.floor((largura - 32 - (porLinha - 1) * 6) / porLinha);
     tam = Math.max(22, Math.min(44, tam));
@@ -345,8 +340,6 @@ function renderizarPainel() {
     document.getElementById('statSoma').innerText = dados.somaMedia;
     document.getElementById('statPares').innerText = dados.paresMedia;
 
-    // Banner de frescor: corresponde de verdade ao que o robô confirmou por último,
-    // em vez de sempre mostrar verde independente da situação.
     const banner = document.querySelector('.banner');
     const tituloB = document.getElementById('concursoBanner');
     const detalheB = document.getElementById('dataBanner');
@@ -381,8 +374,6 @@ function renderizarPainel() {
     document.getElementById('ticketPalpite').innerHTML = '<span style="color: var(--muted); font-size: 0.85rem;">Clique abaixo para gerar um jogo inteligente...</span>';
 }
 
-// Mais detalhe na análise: top 5 números mais quentes e mais atrasados, sempre
-// visível (não depende de hover, que não funciona bem no celular).
 function renderizarTop5() {
     const dados = dadosGlobais[loteriaAtual];
     const cfg = CONFIGS[loteriaAtual];
@@ -425,12 +416,11 @@ function renderizarGrade() {
         dadosCalculados[i] = { freq: dados.frequencia[i] || 0, atraso: dados.atraso[i] || 0 };
     }
 
-    // Filtro inteligente por período/janela
     if (periodoAtual > 0 && dados.recentDraws) {
         for(let i=1; i<=cfg.max; i++) { dadosCalculados[i] = { freq: 0, atraso: 0 }; }
         const fatiados = dados.recentDraws.slice(-periodoAtual);
         
-        fatiados.forEach((s, index) => {
+        fatiados.forEach((s) => {
             s.dezenas.forEach(n => {
                 if (dadosCalculados[n]) dadosCalculados[n].freq++;
             });
@@ -502,7 +492,6 @@ function conferirAposta() {
         return;
     }
 
-    // Aceita números separados por vírgula, espaço ou ambos
     const numeros = [...new Set(
         bruto.split(/[\s,]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n))
     )];
@@ -531,18 +520,44 @@ function conferirAposta() {
     `;
 }
 
+/* ========================================================
+   🔥 GERADOR DE PALPITES CORRIGIDO E DINÂMICO
+   ======================================================== */
 function gerarPalpite() {
     const dados = dadosGlobais[loteriaAtual];
     const cfg = CONFIGS[loteriaAtual];
     if (!dados) return;
 
-    let pool = [];
+    // 1. Monta um mapa limpo para recalcular dinamicamente conforme o período selecionado
+    let dadosCalculados = {};
     for(let i=1; i<=cfg.max; i++) {
-        pool.push({ num: i, freq: dados.frequencia[i] || 0, atraso: dados.atraso[i] || 0 });
+        dadosCalculados[i] = { num: i, freq: dados.frequencia[i] || 0, atraso: dados.atraso[i] || 0 };
     }
 
+    // Se houver janela de tempo selecionada (10 ou 25), filtra do histórico
+    if (periodoAtual > 0 && dados.recentDraws) {
+        for(let i=1; i<=cfg.max; i++) { dadosCalculados[i] = { num: i, freq: 0, atraso: 0 }; }
+        const fatiados = dados.recentDraws.slice(-periodoAtual);
+        
+        fatiados.forEach(s => {
+            s.dezenas.forEach(n => {
+                if (dadosCalculados[n]) dadosCalculados[n].freq++;
+            });
+        });
+        
+        for(let i=1; i<=cfg.max; i++) {
+            let ultimoIdx = -1;
+            for(let j = fatiados.length - 1; j >= 0; j--) {
+                if(fatiados[j].dezenas.includes(i)) { ultimoIdx = j; break; }
+            }
+            dadosCalculados[i].atraso = ultimoIdx !== -1 ? (fatiados.length - 1) - ultimoIdx : fatiados.length;
+        }
+    }
+
+    let pool = Object.values(dadosCalculados);
     let selecionados = [];
 
+    // 2. Aplica a estratégia com base no pool calculado do período
     if (estrategiaAtual === 'quentes') {
         pool.sort((a, b) => b.freq - a.freq);
         selecionados = pool.slice(0, cfg.dezenasPalpite).map(p => p.num);
@@ -550,7 +565,7 @@ function gerarPalpite() {
         pool.sort((a, b) => b.atraso - a.atraso);
         selecionados = pool.slice(0, cfg.dezenasPalpite).map(p => p.num);
     } else {
-        // Misto/Equilibrado
+        // Misto equilibrado
         pool.sort((a, b) => b.freq - a.freq);
         const quentes = pool.slice(0, Math.floor(cfg.dezenasPalpite / 2)).map(p => p.num);
         
@@ -561,9 +576,15 @@ function gerarPalpite() {
         selecionados = [...quentes, ...atrasadas];
     }
 
+    // 3. Adiciona aleatoriedade saudável para desempatar números com pesos iguais
+    selecionados = selecionados.sort(() => Math.random() - 0.5);
+    
+    // Ordena de forma crescente para colocar no cartão
     selecionados.sort((a, b) => a - b);
 
+    // 4. Limpa e injeta as novas dezenas
     const ticket = document.getElementById('ticketPalpite');
+    ticket.innerHTML = '';
     ticket.innerHTML = selecionados.map((n, idx) => `
         <div class="bola-grande" style="animation-delay: ${idx * 0.03}s">
             ${String(n).padStart(2, '0')}
