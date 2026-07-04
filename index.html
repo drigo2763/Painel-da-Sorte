@@ -521,20 +521,19 @@ function conferirAposta() {
 }
 
 /* ========================================================
-   🔥 GERADOR DE PALPITES CORRIGIDO E DINÂMICO
+   🔥 GERADOR DE PALPITES TOTALMENTE ALEATÓRIO E DINÂMICO
    ======================================================== */
 function gerarPalpite() {
     const dados = dadosGlobais[loteriaAtual];
     const cfg = CONFIGS[loteriaAtual];
     if (!dados) return;
 
-    // 1. Monta um mapa limpo para recalcular dinamicamente conforme o período selecionado
+    // 1. Monta o pool recalculado do período selecionado
     let dadosCalculados = {};
     for(let i=1; i<=cfg.max; i++) {
         dadosCalculados[i] = { num: i, freq: dados.frequencia[i] || 0, atraso: dados.atraso[i] || 0 };
     }
 
-    // Se houver janela de tempo selecionada (10 ou 25), filtra do histórico
     if (periodoAtual > 0 && dados.recentDraws) {
         for(let i=1; i<=cfg.max; i++) { dadosCalculados[i] = { num: i, freq: 0, atraso: 0 }; }
         const fatiados = dados.recentDraws.slice(-periodoAtual);
@@ -557,36 +556,49 @@ function gerarPalpite() {
     let pool = Object.values(dadosCalculados);
     let selecionados = [];
 
-    // 2. Aplica a estratégia com base no pool calculado do período
+    // 2. Aplica a estratégia dando uma "embaralhada" inteligente para mudar a cada clique
     if (estrategiaAtual === 'quentes') {
+        // Pega uma quantidade maior das melhores e sorteia entre elas
         pool.sort((a, b) => b.freq - a.freq);
-        selecionados = pool.slice(0, cfg.dezenasPalpite).map(p => p.num);
+        let corteQuentes = pool.slice(0, Math.min(cfg.max, cfg.dezenasPalpite + 5));
+        corteQuentes.sort(() => Math.random() - 0.5);
+        selecionados = corteQuentes.slice(0, cfg.dezenasPalpite).map(p => p.num);
+        
     } else if (estrategiaAtual === 'atrasadas') {
+        // Pega uma quantidade maior das mais atrasadas e sorteia entre elas
         pool.sort((a, b) => b.atraso - a.atraso);
-        selecionados = pool.slice(0, cfg.dezenasPalpite).map(p => p.num);
+        let corteAtrasadas = pool.slice(0, Math.min(cfg.max, cfg.dezenasPalpite + 5));
+        corteAtrasadas.sort(() => Math.random() - 0.5);
+        selecionados = corteAtrasadas.slice(0, cfg.dezenasPalpite).map(p => p.num);
+        
     } else {
-        // Misto equilibrado
+        // Misto equilibrado: metade quente, metade atrasada com rotação ativa
         pool.sort((a, b) => b.freq - a.freq);
-        const quentes = pool.slice(0, Math.floor(cfg.dezenasPalpite / 2)).map(p => p.num);
+        let qPool = pool.slice(0, Math.floor(cfg.max / 2)).sort(() => Math.random() - 0.5);
+        const quentes = qPool.slice(0, Math.floor(cfg.dezenasPalpite / 2)).map(p => p.num);
         
         pool.sort((a, b) => b.atraso - a.atraso);
-        const filtradasAtraso = pool.filter(p => !quentes.includes(p.num));
-        const atrasadas = filtradasAtraso.slice(0, cfg.dezenasPalpite - quentes.length).map(p => p.num);
+        let filtradasAtraso = pool.filter(p => !quentes.includes(p.num));
+        let aPool = filtradasAtraso.slice(0, Math.floor(cfg.max / 2)).sort(() => Math.random() - 0.5);
+        const atrasadas = aPool.slice(0, cfg.dezenasPalpite - quentes.length).map(p => p.num);
         
         selecionados = [...quentes, ...atrasadas];
     }
 
-    // 3. Adiciona aleatoriedade saudável para desempatar números com pesos iguais
-    selecionados = selecionados.sort(() => Math.random() - 0.5);
-    
-    // Ordena de forma crescente para colocar no cartão
+    // Se por algum motivo de empate/filtro faltar número, preenche com aleatórios pura
+    while (selecionados.length < cfg.dezenasPalpite) {
+        let numAleatorio = Math.floor(Math.random() * cfg.max) + 1;
+        if (!selecionados.includes(numAleatorio)) selecionados.push(numAleatorio);
+    }
+
+    // Ordena bonitinho do menor para o maior antes de mostrar na tela
     selecionados.sort((a, b) => a - b);
 
-    // 4. Limpa e injeta as novas dezenas
+    // 3. Limpa e injeta as novas dezenas com a animação de "pop"
     const ticket = document.getElementById('ticketPalpite');
     ticket.innerHTML = '';
     ticket.innerHTML = selecionados.map((n, idx) => `
-        <div class="bola-grande" style="animation-delay: ${idx * 0.03}s">
+        <div class="bola-grande" style="animation-delay: ${idx * 0.02}s">
             ${String(n).padStart(2, '0')}
         </div>
     `).join('');
